@@ -1,0 +1,25 @@
+## for usage of this folder; codebase
+
+This is a work-in-progress area for building a ton of automation
+code for finance, accounting, and all things related. 
+
+eventually, this will be merged with the calendar/ logistics project
+built for Mobile TV Group and Calmechanic.com.   
+
+presently; (as of 12-20-2022) I have some highly effective automation
+useful for scraping and parsing portalMobiletvgroup API to make 
+invoice line items for EIC jobs, overtime, travel days and per-diem. 
+there is also a good setup for parsing receipt data, then matching to 
+jobs from portal. 
+
+Using verify.com API, I found this is the most effective, due to the 
+parsing outout structure of the data parsed from a variety of PDF or 
+PNG image files.
+
+By omitting the steps (custom built) to parse lyft ride reports, this 
+data is different. It is already structured as it outputs a .csv file
+with fields needed already. Plus, the tool written to match rides to 
+their specific job dates based on ride notes (IE to airport, to hotel,
+venue, etc. ) is a different challenge than what receipt information 
+provides.
+

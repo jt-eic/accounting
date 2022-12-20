@@ -1,0 +1,23 @@
+*.qif
+*.odf
+*.xls
+
+*.pickle
+*.pkl
+
+*.log
+*.exe
+
+.env
+.venv/**
+.venv_39/**
+
+*.pdf
+
+ZOHO income and exp. data/**
+zoho CSVs for imports/**
+statements/**
+hidden/**
+current expenses/**
+test CSV from parsers/**
+__pycache__/**

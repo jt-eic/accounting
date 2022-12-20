@@ -1,0 +1,29 @@
+index,Invoice_Date,Invoice_Number,Item Name,Item Desc,Item Price,Usage Unit,Quantity
+eicot,-,-,overtime, EIC rate WO. #,105,hours,1
+eiclocal,-,-,EIC,WO. #,700,day rate,1
+eic,-,-,EIC,WO. #,700,day rate,1
+eictvl in,-,-,EIC travel day,WO. #,700,half day,0.5
+eictvl out,-,-,EIC travel day,WO. #,700,half day,0.5
+mileage,-,-,Mileage to airport,62.4 mi. x .625¢ ,0.625,miles,62.4
+supply,-,-,truck supplies,enter description of items,0,ea.,1
+uber,-,-,Uber,trips combined (receipts attached),0,totals,1
+perdiem,-,-,Per diem,all other cities,63,days,1
+perdiemhi,-,-,Per diem hi,"Baltimore, Boston, Chicago, Las Vegas, New York city, S.F bay, Seattle, Washington DC, Canada",73,days,1
+layover,-,-,Layover day,,700,half day,0.5
+airporttoll,-,-,tolls to airport,(receipt attached),11.8,ea.,1
+mileage3,-,-,Mileage from airport,62.4 mi. x .585Â¢,0.585,miles,62.4
+tolls2,-,-,tolls from airport,(receipt attached),11.8,ea.,
+e2,-,-,E2- Maintenance eic,WO. #,590,day rate,1
+e2tvl,-,-,E2 travel day,WO. #,590,half day,0.5
+e2ot,-,-,overtime: E2 rate,WO. #,88.5,hours,1
+hotel_,-,-,Hotel stay,WO. #,0,ea.,
+shop,-,-,Shop/ Maintenance,~ fill in details of work done here ~,350,half day,1
+video v2tvl,-,-,travel day  v2 rate,half day rate for V2 position,555,half day,1
+video v2ot,-,-,overtime v2 rate,Overtime value: hours worked:,72,hours,1
+video v1tvl,-,-,V1 travel day,Travel day half rate,550,half day,1
+mnt.,-,-,Maintenance/ VYVX panel PMI,Preventative Maintenance Inspection for VYVX service panels,300,day rate,1
+video ot,-,-,Video V1 overtime,Overtime value: hours worked:,75,hours,1
+video v1ot,-,-,overtime V1 rate,Overtime value: hours worked:,82.5,hours,1
+v1 overtime,-,-,overtime V1 rate,Overtime value: hours worked:,82.5,hours,1
+v2,-,-,video v2,V2 rate for Moto America,500,day rate,1
+v1,-,-,Video v1,Video V1 position,550,day rate,1

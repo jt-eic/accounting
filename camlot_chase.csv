@@ -1,0 +1,9 @@
+,0,1,2
+0,DATE,DESCRIPTION,AMOUNT
+1,01/09,Deposit      1833291081,"$4,141.27"
+2,01/15,Deposit      1822989647,"4,531.95"
+3,01/23,Remote Online Deposit              1,"1,762.35"
+4,01/28,Deposit      1847427323,"2,168.55"
+5,Total Deposits and Additions,,"$12,604.12"
+6,*end*deposits and additions,,
+7,*start*checks paid section3,,
