@@ -1,6 +1,9 @@
 *.qif
 *.odf
 *.xls
+*.csv
+*.ods
+*.png
 
 *.pickle
 *.pkl
@@ -14,6 +17,7 @@
 
 *.pdf
 
+SHOW_files/**
 ZOHO income and exp. data/**
 zoho CSVs for imports/**
 statements/**

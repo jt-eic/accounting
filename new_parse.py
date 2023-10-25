@@ -190,10 +190,6 @@ if __name__ == '__main__':
     exp_df.to_csv(f"{nowfilename}_ADDexpenses.csv", index=False)
 
 
-
-
-
-
     # with open(ext_file, 'wb') as saveme:
     #     pickle.dump(parseddata, saveme)  # wrote it out for this run...
 

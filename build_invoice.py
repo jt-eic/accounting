@@ -6,8 +6,29 @@ from dotenv import load_dotenv
 import os, sys
 import time
 import pickle
+## ************************************   ENTER SOME BASICS HERE FOR INV. NUMBER and how many days  ****************
+daysback = 3
+invoice_number = 712
 
-''' this step: building an invoice is a small part of a larger system. Use of dates, job numbers and other job information
+days_message = f"the default number of days to look back is\n{daysback}. change the number or hit enter to keep the default."
+enterdays = input(days_message)
+if enterdays:
+    print(f"a new value for how far back to start invoice: {enterdays}")
+    daysback = int(enterdays)
+
+''' 
+Latest note on invoicing rows:  as of 1/2/2023...
+Trying to clean up the accounting platform and consolidate which versions of 'items' to use. Currently there are multiple
+items it pulls from for use in Zoho Books. IE:
+travel day
+Travel Day
+EIC travel day   ...  
+
+I'd like to simplify the system and decide on ONE standard naming convention on everything. I like lower-case. Probably
+using Capital Words Each might seem more 'professional'? 
+
+
+this step: building an invoice is a small part of a larger system. Use of dates, job numbers and other job information
 is re-organized into a range of single line-items for purposes of invoicing. The invoice items are derived from another 
 source; a .csv file containing 'items' with basic descriptions and prices. IE: EIC (day rate) based job, overtime past 10
 hours, travel days, per diem. All of which billable items make up a full invoice.
@@ -37,14 +58,18 @@ def back_day(strdate: str):
     ''' take the string and subtract one date value to get travel day prior.  returns Mon Jan 1 ex.'''
     dateobj = datetime.strptime(strdate, '%m/%d/%Y')
     dayminus = dateobj - timedelta(days=1)
-    return datetime.strftime(dayminus, "%a. %b %d")
+    return datetime.strftime(dayminus, "%a. %b %d"), dayminus
 
 
 def forward_day(strdate: str):
     ''' take the string and add one for the next day. returns Mon Jan 1 ex.'''
     dateobj = datetime.strptime(strdate, '%m/%d/%Y')
     dayplus = dateobj + timedelta(days=1)
-    return datetime.strftime(dayplus, "%a. %b %d")
+    return datetime.strftime(dayplus, "%a. %b %d"), dayplus
+
+
+def make_daystring(anydate):
+    return datetime.strftime(anydate, "%a. %b %d")
 
 
 ## formatted and figured out dates for each invoice run
@@ -53,17 +78,17 @@ today = datetime.today()
 
 todaystr = datetime.strftime(today, "%Y-%m-%d")  # for the date as 'invoice date' as YYYY-MM-DD'
 yeststr = today - timedelta(days=1)
-duedatestr = datetime.strftime(today + timedelta(days=9), "%Y-%m-%d")
-begin = today - timedelta(days=6)
+duedatestr = datetime.strftime(today + timedelta(days=7), "%Y-%m-%d")
+begin = today - timedelta(days=daysback)
 backdate = begin.isoformat() + "Z"
 sdate = yeststr.isoformat() + "Z"
-dayplus = today + timedelta(days=60)
+dayplus = today + timedelta(days=2)
 edate = None
 if edate == None:
     edate = dayplus.isoformat() + "Z"
 else:
     edate = edate
-print('the dates', sdate, edate)
+print('the dates', backdate, sdate)
 
 AGENT_LIST = ["Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:74.0) Gecko/20100101 Firefox/74.0",
               "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/35.0.1916.47 Safari/537.36",]
@@ -151,6 +176,7 @@ mtvg = "Mobile TV Group"
 
 if __name__ == "__main__":
     myname = 'Thomas, Jasun'
+    invnumber = input('enter the next invoice number: ')
     invoice_start = pd.read_csv('invoice_starter.csv')
 
     # date from sdate for invoice lines:
@@ -183,8 +209,10 @@ if __name__ == "__main__":
     # # get these invoice line items minimum:
     
     exp_jobdict = {}  # stack up what this finds as a date: wonum dictionary to use with expenses later. Temp solution
-
-    for job in jobdetails:
+    span = len(jobdetails)-1
+    pd_count = 0  # count record for per_diem quantity value
+    layover_check = []  # store prev date or next date objects to see if current job objects match. If so, no layover
+    for i, job in enumerate(jobdetails):
         '''parse out job data: 
         Date; factor before=after date with travel;; I can delete it if not needed? simpler.
         job number = ReferenceNo
@@ -197,8 +225,11 @@ if __name__ == "__main__":
         Invoice_Date,Invoice_Number,Customer_Name,Item Name,Item Desc,Item Price,Usage Unit,\
             Quantity,Item Total,PurchaseOrder,ReferenceNo,cf.show date,Due Date,CF.event
         '''
+        print(f"loop count: {i}")
         job_r = job['eventReport']  # block of main data to get the rest from
         jobdate = job_r['eventDate']
+        jobdateobj = datetime.strptime(jobdate, '%m/%d/%Y')
+        print(f" what is this jobdate: {jobdate}")
         truck = job['eventDetail']['truckType']  # for removing things from the lines, or make NOT eic
         eventname = job_r['eventName']
         wo_num = job_r['workOrderNumber']
@@ -213,21 +244,38 @@ if __name__ == "__main__":
             if myname in eic['employeeName']:
                 calltime = eic['inTime']
                 outtime = eic['outTime']
-                overtime = float(eic['totalTimeHours']) - 10.0
+                try:
+                    overtime = float(eic['totalTimeHours']) - 10.0
+                except TypeError:
+                    print(f"no overtime as this isn't a job.")
+                    overtime = 0
         
         # above here, all data gathered.  Now stack it for inserting to new df
    
         # format the found data and combine with item.csv to create invoice lines
-        spec_items = ['eictvl in', 'eic', 'eicot', 'eictvl out', 'perdiem',]
+        tvl_in_day, in_dateobj = back_day(jobdate)
+        tvl_out_day, out_dateobj = forward_day(jobdate)
+        job_dayMo = day_and_month(jobdate)
+
+        spec_items = ['eictvl in', 'eic', 'eicot', 'eictvl out', 'layover', 'perdiem',]
         for item in spec_items:
-            tvl_in_day = back_day(jobdate)
-            tvl_out_day = forward_day(jobdate)
-            job_dayMo = day_and_month(jobdate)
+            # consecutive or not?
+            if item == 'layover':
+                print(f" wtf is in layover check? {layover_check} and the job now? {jobdateobj}")
+                if jobdateobj in layover_check or not layover_check:
+                    print(f" job date found in layover, skip layover line")
+                    print(f" job date: {str(jobdateobj)} and previous date: {str(layover_check)}")
+                    continue
+                else:
+                    print(f" job date NOT in layover check, make layover day")
+                    desc_stack = f"Layover\n{tvl_in_day} W.O.#:{wo_num}"
+
+
 
             inv_line = items.loc[item].to_dict()
             inv_line['Customer_Name'] = mtvg
             inv_line['Invoice_Date'] = todaystr  # for each one
-            inv_line['Invoice_Number'] = "INV_00  _MTVG"
+            inv_line['Invoice_Number'] = f"INV_00{invnumber}_MTVG"
             inv_line['PurchaseOrder'] = wo_num
             inv_line['ReferenceNo'] = wo_num
             inv_line['cf.show date'] = jobdate
@@ -235,24 +283,38 @@ if __name__ == "__main__":
             inv_line['CF.event'] = evname_lineitem
             
             if 'eictvl in' == item:
+                if i != 0:
+                    continue
                 desc_stack = f"Travel\n{tvl_in_day} W.O.#:{wo_num}"
                 print(f" TVL in item: {desc_stack}")
+                pd_count += 1
             if 'eictvl out' == item:
+                if i != span:
+                    continue
                 desc_stack = f"Travel\n{tvl_out_day} W.O.#:{wo_num}"
+                pd_count += 1
                 print(f" tvl out item: {desc_stack}")
             if 'eic' == item:
                 desc_stack = f"{evname_lineitem}\n{job_dayMo} W.O.#:{wo_num}"
                 print(f" eic in item: {desc_stack}")
+                pd_count += 1
             if 'eicot' == item:
+                if overtime == 0:
+                    continue
                 desc_stack = f"{job_dayMo} W.O.#:{wo_num}\nstart:{calltime}  end:{outtime}  {overtime} hours"
                 print(f" ot in stack: {desc_stack}")
                 inv_line['Quantity'] = overtime
             if 'perdiem' == item:
+                if i != span:
+                    continue
                 desc_stack = f"{tvl_in_day} to {tvl_out_day} per diem for ___ location"
+                inv_line['Quantity'] = pd_count
             
             inv_line['Item Desc'] = desc_stack
             invoice_start.loc[len(invoice_start.index)] = inv_line
-            # print(inv_line)
+
+        layover_check = [in_dateobj, out_dateobj]
+        # print(inv_line)
 
     with open('workorders.pkl', 'wb') as expfile:
         pickle.dump(exp_jobdict, expfile)
